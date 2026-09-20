@@ -1,0 +1,49 @@
+# Runs the trainer on GitHub's servers and publishes model.js.
+# The phone app reads that file, so nothing needs installing or rebuilding.
+name: update model
+
+on:
+  schedule:
+    - cron: "0 5 * * *"        # 05:00 UTC daily. Change the hour if you want.
+  workflow_dispatch:            # also lets you run it by hand from the GitHub app
+
+permissions:
+  contents: write
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install requests numpy
+
+      # keep the downloaded match history between runs so each day only fetches what is new
+      - uses: actions/cache@v4
+        with:
+          path: cache_cs
+          key: cache-cs-${{ github.run_id }}
+          restore-keys: cache-cs-
+
+      - name: Train
+        env:
+          PANDASCORE_TOKEN: ${{ secrets.PANDASCORE_TOKEN }}
+        run: python cs_trainer.py
+
+      - name: Build
+        env:
+          MODEL_URL: ${{ secrets.MODEL_URL }}
+        run: python build.py
+
+      - name: Publish model.js
+        run: |
+          git config user.name "model bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add -f model.js
+          git diff --staged --quiet || git commit -m "model $(date -u +%Y-%m-%d)"
+          git push
