@@ -29,7 +29,7 @@ jobs:
 
       - name: Train
         env:
-          PANDASCORE_TOKEN: ${{ secrets.PANDASCORE_TOKEN }}
+          PANDASCORE_TOKEN:"di0FFBr1_1GjEpPMJNxCkjdM2cHqPMkUQuVLBZUOITRfjsUK8pc"
         run: python cs_trainer.py
 
       - name: Build
