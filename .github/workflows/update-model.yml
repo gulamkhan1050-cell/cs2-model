@@ -44,3 +44,5 @@ jobs:
           git add -f model.js
           git diff --staged --quiet || git commit -m "model $(date -u +%Y-%m-%d)"
           git push
+                - name: Purge the CDN
+        run: curl -sS "https://purge.jsdelivr.net/gh/${{ github.repository }}@main/model.js" || true
