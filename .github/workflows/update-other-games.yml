@@ -1,0 +1,64 @@
+# Trains the CS2 model for the other esports (other_games_trainer.py) and publishes models/<game>.js,
+# which the Esports Intel site reads. One game per hour so the PandaScore free quota (1,000 requests/hour)
+# is never shared by two games. By hand: Actions -> update other games -> Run workflow -> pick a game.
+name: update other games
+
+on:
+  schedule:
+    - cron: "10 13 * * *"   # valorant  (18:40 India)
+    - cron: "10 14 * * *"   # r6
+    - cron: "10 15 * * *"   # ow
+    - cron: "10 16 * * *"   # rl
+    - cron: "10 17 * * *"   # cod
+    - cron: "10 18 * * *"   # mlbb
+  workflow_dispatch:
+    inputs:
+      game:
+        description: "valorant, r6, ow, rl, cod or mlbb"
+        required: true
+        default: valorant
+
+permissions:
+  contents: write
+
+concurrency:
+  group: other-games
+  cancel-in-progress: false
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - name: Which game
+        id: g
+        run: |
+          if [ -n "${{ github.event.inputs.game }}" ]; then g="${{ github.event.inputs.game }}"; else
+            case "$(date -u +%H)" in 13) g=valorant;; 14) g=r6;; 15) g=ow;; 16) g=rl;; 17) g=cod;; *) g=mlbb;; esac; fi
+          echo "game=$g" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests numpy
+
+      - uses: actions/cache@v4
+        with:
+          path: cache_${{ steps.g.outputs.game }}
+          key: cache-${{ steps.g.outputs.game }}-${{ github.run_id }}
+          restore-keys: cache-${{ steps.g.outputs.game }}-
+
+      - name: Train
+        env:
+          PANDASCORE_TOKEN: ${{ secrets.PANDASCORE_TOKEN }}
+        run: python other_games_trainer.py ${{ steps.g.outputs.game }}
+
+      - name: Publish models/${{ steps.g.outputs.game }}.js
+        run: |
+          git config user.name "model bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add -f models/${{ steps.g.outputs.game }}.js
+          git diff --staged --quiet && exit 0
+          git commit -m "${{ steps.g.outputs.game }} model $(date -u +%Y-%m-%d)"
+          for i in 1 2 3; do git pull --rebase -q && git push && break; sleep 5; done
