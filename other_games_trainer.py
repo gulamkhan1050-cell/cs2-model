@@ -26,7 +26,7 @@ def main():
     os.makedirs("models", exist_ok=True)
     T.CACHE_DIR = f"cache_{game}"
     out = f"models/{game}.json"
-    if os.environ.get("PANDASCORE_TOKEN"):
+    if not T.TOKEN and os.environ.get("PANDASCORE_TOKEN"):  # same token as cs_trainer.py; the secret only if that is empty
         T.TOKEN = os.environ["PANDASCORE_TOKEN"]
     base_get = T.ps_get
 
