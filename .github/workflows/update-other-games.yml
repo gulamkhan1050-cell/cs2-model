@@ -48,6 +48,16 @@ jobs:
           key: cache-${{ steps.g.outputs.game }}-${{ github.run_id }}
           restore-keys: cache-${{ steps.g.outputs.game }}-
 
+      # every 3 days (the same days as the CS2 / Dota 2 releases), and on a run by hand: re-check this game's settings
+      - name: Retune
+        env:
+          PANDASCORE_TOKEN: ${{ secrets.PANDASCORE_TOKEN }}
+        run: |
+          d=$(date -u +%-d)
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ $(( (d - 1) % 3 )) -eq 0 ] || [ ! -f tune_${{ steps.g.outputs.game }}.json ]; then
+            python other_games_trainer.py ${{ steps.g.outputs.game }} --tune
+          fi
+
       - name: Train
         env:
           PANDASCORE_TOKEN: ${{ secrets.PANDASCORE_TOKEN }}
@@ -58,6 +68,7 @@ jobs:
           git config user.name "model bot"
           git config user.email "bot@users.noreply.github.com"
           git add -f models/${{ steps.g.outputs.game }}.js
+          [ -f tune_${{ steps.g.outputs.game }}.json ] && git add -f tune_${{ steps.g.outputs.game }}.json
           git diff --staged --quiet && exit 0
           git commit -m "${{ steps.g.outputs.game }} model $(date -u +%Y-%m-%d)"
           for i in 1 2 3; do git pull --rebase -q && git push && break; sleep 5; done

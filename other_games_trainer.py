@@ -6,6 +6,7 @@ only pointed at another game's PandaScore matches. Round scores are used where P
 (Valorant, Rainbow Six); other games simply skip the margin-of-victory step.
 
 Run:   python other_games_trainer.py valorant          # -> models/valorant.json + models/valorant.js
+       python other_games_trainer.py valorant --tune   # retune this game's settings -> tune_valorant.json (as tune.py does for CS2)
        python other_games_trainer.py r6 --months 18
        python other_games_trainer.py ow --demo         # offline pipeline check
 Games: valorant, r6, ow, rl, cod, mlbb
@@ -15,6 +16,7 @@ import json, os, sys
 
 import cs_trainer as T
 
+DEFAULTS = {"K_TEAM": 32.0, "K_PLAYER": 20.0, "L2": 1.0, "CAP": 0.85}
 GAMES = {"valorant": "valorant", "r6": "r6siege", "ow": "ow", "rl": "rl", "cod": "codmw", "mlbb": "mlbb"}
 
 
@@ -34,6 +36,21 @@ def main():
         return base_get(path.replace("/csgo/", f"/{slug}/", 1), *a, **k)
 
     T.ps_get = ps_get
+    # each game has its own tuned settings: start from the defaults (not CS2's tune.json), then this game's file
+    T.apply_tune(DEFAULTS)
+    T.TUNE_FILE = f"tune_{game}.json"
+    if os.path.exists(T.TUNE_FILE):
+        T.apply_tune(json.load(open(T.TUNE_FILE, encoding="utf-8")).get("settings"))
+    if "--tune" in sys.argv:
+        sys.argv.remove("--tune")
+        import tune
+        tune.T = T
+        if "--out" not in sys.argv:
+            sys.argv += ["--out", T.TUNE_FILE]
+        if "--odds" not in sys.argv:
+            sys.argv += ["--odds", f"odds_log_{game}.json"]
+        tune.main()
+        return
     if "--out" not in sys.argv:
         sys.argv += ["--out", out]
     if "--odds" not in sys.argv:
