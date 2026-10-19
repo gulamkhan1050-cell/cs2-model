@@ -1,8 +1,20 @@
 {
- "version": "1.1",
- "date": "2026-10-17",
- "commit": "83c92eb43faed74915f324b341e58587c353ba9b",
+ "version": "1.2",
+ "date": "2026-10-19",
+ "commit": "b4e3350ca044bcf7dfa4764452b1fd3872a26bfd",
  "history": [
+  {
+   "version": "1.2",
+   "date": "2026-10-19",
+   "notes": [
+    "Model settings re-checked on the newest 6427 games (27 combinations): the current ones are still the best",
+    "Last 7 days: 600 maps/games, 62.0% picked right",
+    "Data: 14,921 matches, 1193 teams, holdout accuracy 62.9% per map",
+    "Fix: Other games retune every 3 days with their own settings (tune_<game>.json), not CS2's",
+    "Fix: Other games: pick the game from the schedule that fired, not the clock (late runs skipped Valorant, R6 and Overwatch)",
+    "Fix: Release every 3 days instead of weekly"
+   ]
+  },
   {
    "version": "1.1",
    "date": "2026-10-17",
