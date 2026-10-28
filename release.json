@@ -1,8 +1,17 @@
 {
- "version": "1.4",
- "date": "2026-10-25",
- "commit": "b70be0fe7b80c2bb66dc3a6327f185936ea8b8cb",
+ "version": "1.5",
+ "date": "2026-10-28",
+ "commit": "d5328651cbe2c5ec8ee3771b1f495b71e7f43bf2",
  "history": [
+  {
+   "version": "1.5",
+   "date": "2026-10-28",
+   "notes": [
+    "Model settings re-checked on the newest 6391 games (27 combinations): the current ones are still the best",
+    "Last 7 days: 791 maps/games, 60.2% picked right",
+    "Data: 14,771 matches, 1170 teams, holdout accuracy 62.3% per map"
+   ]
+  },
   {
    "version": "1.4",
    "date": "2026-10-25",
