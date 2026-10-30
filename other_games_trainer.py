@@ -36,6 +36,8 @@ def main():
         return base_get(path.replace("/csgo/", f"/{slug}/", 1), *a, **k)
 
     T.ps_get = ps_get
+    base_total = T.ps_total
+    T.ps_total = lambda path, *a, **k: base_total(path.replace("/csgo/", f"/{slug}/", 1), *a, **k)  # the data check counts this game too
     # each game has its own tuned settings: start from the defaults (not CS2's tune.json), then this game's file
     T.apply_tune(DEFAULTS)
     T.TUNE_FILE = f"tune_{game}.json"
