@@ -15,15 +15,15 @@
  "changed": false,
  "tested": 27,
  "holdout": {
-  "games": 1498,
-  "logloss_previous": 0.6643,
+  "games": 2256,
+  "logloss_previous": 0.6644,
   "logloss_chosen": 0.6643,
-  "accuracy_previous": 0.6001,
-  "accuracy_chosen": 0.6001
+  "accuracy_previous": 0.5997,
+  "accuracy_chosen": 0.5997
  },
  "last_week": {
-  "games": 83,
-  "accuracy_previous": 0.6386,
-  "accuracy_chosen": 0.6386
+  "games": 68,
+  "accuracy_previous": 0.5294,
+  "accuracy_chosen": 0.5294
  }
 }
