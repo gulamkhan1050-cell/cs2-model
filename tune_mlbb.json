@@ -1,5 +1,5 @@
 {
- "as_of": "2026-10-30",
+ "as_of": "2026-10-31",
  "settings": {
   "K_TEAM": 32.0,
   "K_PLAYER": 20.0,
@@ -15,15 +15,15 @@
  "changed": false,
  "tested": 27,
  "holdout": {
-  "games": 539,
-  "logloss_previous": 0.6116,
-  "logloss_chosen": 0.6116,
-  "accuracy_previous": 0.6716,
-  "accuracy_chosen": 0.6716
+  "games": 849,
+  "logloss_previous": 0.6217,
+  "logloss_chosen": 0.6218,
+  "accuracy_previous": 0.6561,
+  "accuracy_chosen": 0.6561
  },
  "last_week": {
-  "games": 58,
-  "accuracy_previous": 0.6379,
-  "accuracy_chosen": 0.6379
+  "games": 66,
+  "accuracy_previous": 0.6364,
+  "accuracy_chosen": 0.6364
  }
 }
