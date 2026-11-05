@@ -239,7 +239,7 @@ def fetch_upcoming(days=7, back=1):
     return out
 
 
-def fetch_rosters(tournament_ids):
+def fetch_rosters(tournament_ids, refresh=()):
     """tournament_id -> {team_id: [player_ids]} via GET /tournaments/{id}/rosters (free plan)."""
     f = os.path.join(CACHE_DIR, "rosters.json"); pf = os.path.join(CACHE_DIR, "players.json")
     have = json.load(open(f, encoding="utf-8")) if os.path.exists(f) else {}
@@ -253,6 +253,8 @@ def fetch_rosters(tournament_ids):
         if str(t) in have:
             tries[str(t)] = tries.get(str(t), 0) + 1
     json.dump(tries, open(tf, "w", encoding="utf-8"))
+    # tournaments being played now or next: their lineups are read again every run (a stand-in or a swap mid-event)
+    todo += [t for t in refresh if t and t not in todo][:80]
     print(f"rosters: {len(have)} cached, {len(todo)} to fetch")
     stopped = False
     for i, tid in enumerate(todo):
@@ -264,7 +266,7 @@ def fetch_rosters(tournament_ids):
         except SystemExit:
             raise
         except Exception as e:
-            print(f"  roster {tid} failed: {e}"); have[str(tid)] = {}; time.sleep(0.7); continue
+            print(f"  roster {tid} failed: {e}"); have[str(tid)] = have.get(str(tid)) or {}  # a failed re-read keeps the lineup we had; time.sleep(0.7); continue
         try:
             rosters = res.get("rosters") if isinstance(res, dict) else res
             have[str(tid)] = {str(r["id"]): [p["id"] for p in (r.get("players") or [])]
@@ -274,7 +276,7 @@ def fetch_rosters(tournament_ids):
                     if p.get("id"): PNAMES[p["id"]] = p.get("name") or p.get("slug") or str(p["id"])
         except Exception as e:
             print(f"  roster {tid} unreadable: {e}")
-            have[str(tid)] = {}
+            have[str(tid)] = have.get(str(tid)) or {}  # a failed re-read keeps the lineup we had
         if (i + 1) % 25 == 0:
             print(f"  {i+1}/{len(todo)}")
             json.dump(have, open(f, "w", encoding="utf-8")); json.dump({str(k): v for k, v in PNAMES.items()}, open(pf, "w", encoding="utf-8"))
@@ -482,7 +484,10 @@ def load_data(args):
     else:
         matches = fetch_past_matches(args.months)
         upcoming = fetch_upcoming(7, 1)
-        rosters = fetch_rosters(sorted({m["tournament_id"] for m in matches + upcoming if m["tournament_id"]}))
+        live = time.time() - 3 * 86400  # tournaments with a match in the last 3 days or coming up: lineups read fresh
+        rosters = fetch_rosters(sorted({m["tournament_id"] for m in matches + upcoming if m["tournament_id"]}),
+                                refresh=sorted({m["tournament_id"] for m in upcoming if m["tournament_id"]} |
+                                               {m["tournament_id"] for m in matches if m["tournament_id"] and m["ts"] >= live}))
     return matches, rosters, upcoming
 
 
